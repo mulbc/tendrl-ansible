@@ -1,15 +1,18 @@
-
-
 [tendrl-servers]
-
+localhost
 
 [storage-servers]
-
+storage1 ansible_host=10.10.1.139
+storage2 ansible_host=10.10.1.141
+storage3 ansible_host=10.10.1.142
 
 [infrastructure:children]
 tendrl-servers
 storage-servers
 
-[dorf:vars]
-ansible_user=ansible
-ansible_ssh_private_key_file=/home/chris/.ssh/id_rsa
+[tendrl-servers:vars]
+ansible_connection=local
+
+[infrastructure:vars]
+ansible_user=vagrant
+ansible_ssh_pass=vagrant
