@@ -1,0 +1,19 @@
+---
+
+- name: Ensure etcd is installed
+  apt:
+    name: tendrl-node-agent
+    state: latest
+
+- name: Configure etcd connection for tendrl-noded
+  lineinfile:
+    dest: /etc/tendrl/tendrl.conf
+    line: "etcd_connection = '{{ etcd_server_address }}'"
+    regexp: '^etcd_connection'
+
+- service:
+    name: tendrl-noded
+    enabled: yes
+    state: started
+
+# http://IP:2379/v2/keys/nodes should list all nodes

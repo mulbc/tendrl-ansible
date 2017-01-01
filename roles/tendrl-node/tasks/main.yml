@@ -1,2 +1,4 @@
 ---
-# tasks file for tendrl-node
+
+- include: install.yml
+  tags: setup

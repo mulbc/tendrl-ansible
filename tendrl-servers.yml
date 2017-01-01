@@ -1,0 +1,6 @@
+---
+
+- hosts: tendrl-servers
+  become: yes
+  roles:
+    - 

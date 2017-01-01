@@ -1,0 +1,3 @@
+---
+- include: tendrl-servers.yml
+- include: storage-servers.yml
