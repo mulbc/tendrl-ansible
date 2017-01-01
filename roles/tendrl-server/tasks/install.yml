@@ -4,9 +4,18 @@
   set_fact:
     etcd_server_address: '{{ ansible_default_ipv4.address }}'
 
+- name: Install tendrl repo
+  get_url:
+    url: https://copr.fedorainfracloud.org/coprs/tendrl/tendrl/repo/epel-7/tendrl-tendrl-epel-7.repo
+    dest: /etc/yum.repos.d/tendrl-tendrl-epel-7.repo
+
 - name: Disable SELinux
   selinux:
     state: disabled
+
+- name: Activate EPEL
+  apt:
+    name: http://mirror.netcologne.de/fedora-epel/epel-release-latest-7.noarch.rpm
 
 - name: Ensure etcd is installed
   apt:
