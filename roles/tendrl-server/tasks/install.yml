@@ -14,11 +14,12 @@
     state: disabled
 
 - name: Activate EPEL
-  apt:
+  package:
     name: http://mirror.netcologne.de/fedora-epel/epel-release-latest-7.noarch.rpm
 
+# This needs the RHEL extras repo!
 - name: Ensure etcd is installed
-  apt:
+  package:
     name: etcd
     state: latest
 
@@ -28,7 +29,8 @@
     regexp: 'localhost'
     replace: '{{ etcd_server_address }}'
 
-- service:
+- name: Start etcd and enable it on boot
+  service:
     name: etcd
     enabled: yes
     state: started
@@ -37,35 +39,36 @@
   uri:
     url: 'http://{{ etcd_server_address }}:2379/v2/keys'
 
-- name: Install tendlr-api
-  apt:
+- name: Install tendlr-apid
+  package:
     name: tendrl-api
     state: latest
 
-- name: Configure tendrl-api connection to etcd - hostname
+- name: Configure tendrl-apid connection to etcd - hostname
   lineinfile:
     dest: /etc/tendrl/etcd.yml
     line: ":host: '{{ etcd_server_address }}'"
     regexp: ':host:'
 
-- name: Configure tendrl-api connection to etcd - username
+- name: Configure tendrl-apid connection to etcd - username
   lineinfile:
     dest: /etc/tendrl/etcd.yml
     line: ":user_name: ''"
     regexp: ':user_name:'
 
-- name: Configure tendrl-api connection to etcd - password
+- name: Configure tendrl-apid connection to etcd - password
   lineinfile:
     dest: /etc/tendrl/etcd.yml
     line: ":password: ''"
     regexp: ':password:'
 
-- service:
+- name: Start tendrl-apid and enable it on boot
+  service:
     name: tendrl-apid
     enabled: yes
     state: started
 
-- name: Check if tendrl-api is OK
+- name: Check if tendrl-apid is OK
   uri:
     url: 'http://{{ etcd_server_address }}:9292/1.0/ping'
 
