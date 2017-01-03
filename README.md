@@ -1,4 +1,4 @@
-ceph-ansible
+tendrl-ansible
 ============
 
 Ansible playbook for Tendrl!
