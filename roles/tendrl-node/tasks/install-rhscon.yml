@@ -1,0 +1,41 @@
+---
+
+- name: Collect etcd server address
+  set_fact:
+    etcd_server_address: "{{ hostvars[groups['tendrl-servers'][0]]['ansible_default_ipv4']['address'] }}"
+
+- name: DEBUG!
+  debug:
+    msg: "Using {{ etcd_server_address }} to connect to server"
+
+- name: Install rhscon repo
+  package:
+    name: http://jenkins.lab.eng.blr.redhat.com/tendrl/rhscon-release-1.1-1.el7.noarch.rpm
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Activate EPEL
+  package:
+    name: http://mirror.netcologne.de/fedora-epel/epel-release-latest-7.noarch.rpm
+
+# This needs the RHEL extra repo
+- name: Ensure rhscon-node-agent is installed
+  package:
+    name: rhscon-node-agent
+    state: latest
+
+- name: Configure etcd connection for rhscon-noded
+  lineinfile:
+    dest: /etc/tendrl/tendrl.conf
+    line: "etcd_connection = '{{ etcd_server_address }}'"
+    regexp: '^etcd_connection'
+
+- name: Start rhscon-noded and enable it on boot
+  service:
+    name: tendrl-noded
+    enabled: yes
+    state: restarted
+
+# http://IP:2379/v2/keys/nodes should list all nodes

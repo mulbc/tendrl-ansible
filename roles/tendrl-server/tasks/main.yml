@@ -1,4 +1,6 @@
 ---
 
-- include: install.yml
+- include: install-tendrl.yml
   tags: setup
+# - include: install-rhscon.yml
+#   tags: setup

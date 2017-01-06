@@ -1,0 +1,97 @@
+---
+
+- name: Collect etcd server address
+  set_fact:
+    etcd_server_address: '{{ ansible_default_ipv4.address }}'
+
+- name: DEBUG!
+  debug:
+    msg: "Using {{ etcd_server_address }} to connect to server"
+
+- name: Install rhscon repo
+  package:
+    name: http://jenkins.lab.eng.blr.redhat.com/tendrl/rhscon-release-1.1-1.el7.noarch.rpm
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Activate EPEL
+  package:
+    name: http://mirror.netcologne.de/fedora-epel/epel-release-latest-7.noarch.rpm
+
+# This needs the RHEL extras repo!
+- name: Ensure etcd is installed
+  package:
+    name: etcd
+    state: latest
+
+- name: Configure etcd
+  replace:
+    dest: /etc/etcd/etcd.conf
+    regexp: 'localhost'
+    replace: '{{ etcd_server_address }}'
+
+- name: Start etcd and enable it on boot
+  service:
+    name: etcd
+    enabled: yes
+    state: restarted
+
+- name: Check if etcd is OK
+  uri:
+    url: 'http://{{ etcd_server_address }}:2379/v2/keys'
+
+- name: Install rhscon-apid
+  package:
+    name: rhscon-api
+    state: latest
+
+- name: Configure rhscon-apid connection to etcd - hostname
+  lineinfile:
+    dest: /etc/tendrl/etcd.yml
+    line: "  :host: '{{ etcd_server_address }}'"
+    regexp: ':host:'
+
+- name: Configure rhscon-apid connection to etcd - username
+  lineinfile:
+    dest: /etc/tendrl/etcd.yml
+    line: "  :user_name: ''"
+    regexp: ':user_name:'
+
+- name: Configure rhscon-apid connection to etcd - password
+  lineinfile:
+    dest: /etc/tendrl/etcd.yml
+    line: "  :password: ''"
+    regexp: ':password:'
+
+- name: Start rhscon-apid and enable it on boot
+  service:
+    name: tendrl-apid
+    enabled: yes
+    state: restarted
+
+- name: Check if rhscon-apid is OK
+  uri:
+    url: 'http://{{ etcd_server_address }}:9292/1.0/ping'
+  ignore_errors: yes
+
+- name: Install rhscon-dashboard
+  package:
+    name: rhscon-dashboard
+    state: latest
+
+- name: Restart httpd to enable the rhscon-dashboard
+  service:
+    name: httpd
+    enabled: yes
+    state: restarted
+
+- name: Disable firewalld
+  service:
+    name: httpd
+    enabled: no
+
+# curl -XGET http://IP:9292/1.0/ping <--  Check if API server is running
+# curl -XGET http://IP:9292/1.0/GetNodeList <-- Return List of nodes running tendrl-noded
+# curl -XPOST -d '{"Node[]": ["node_id1","node_id2","node_id3"], "Tendrl_context.sds_name":"gluster", Tendrl_context.sds_version:"gluster-version"}' http://IP:9292/1.0/GlusterImportCluster <-- Import existing Gluster Storage Pool

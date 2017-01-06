@@ -51,19 +51,19 @@
 - name: Configure tendrl-apid connection to etcd - hostname
   lineinfile:
     dest: /etc/tendrl/etcd.yml
-    line: ":host: '{{ etcd_server_address }}'"
+    line: "  :host: '{{ etcd_server_address }}'"
     regexp: ':host:'
 
 - name: Configure tendrl-apid connection to etcd - username
   lineinfile:
     dest: /etc/tendrl/etcd.yml
-    line: ":user_name: ''"
+    line: "  :user_name: ''"
     regexp: ':user_name:'
 
 - name: Configure tendrl-apid connection to etcd - password
   lineinfile:
     dest: /etc/tendrl/etcd.yml
-    line: ":password: ''"
+    line: "  :password: ''"
     regexp: ':password:'
 
 - name: Start tendrl-apid and enable it on boot
